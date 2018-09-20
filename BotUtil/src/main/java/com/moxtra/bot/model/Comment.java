@@ -14,11 +14,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Comment implements Serializable {
 	private Message message;
+	private ReplyTo reply_to;
 	private List<Template> fields_template;
 
 	private Comment(Builder builder) {
 		message = builder.message;
 		fields_template = builder.fields_template;
+		reply_to = builder.reply_to;
 	}
 	
     public Message getMessage() {
@@ -28,6 +30,10 @@ public class Comment implements Serializable {
 	public List<Template> getFields_template() {
 		return fields_template;
 	}
+	
+	public ReplyTo getReply_to() {
+		return reply_to;
+	}
 
 	public String toJSONString() throws JsonProcessingException {
         return new ObjectMapper().writeValueAsString(this);
@@ -35,6 +41,7 @@ public class Comment implements Serializable {
 	
 	public static class Builder 
     {
+		private ReplyTo reply_to;
 		private Message message;
 		private List<Template> fields_template;
 		
@@ -86,6 +93,11 @@ public class Comment implements Serializable {
 			return this;
 		}
 
+		public Builder reply_to(ReplyTo reply_to) {
+			this.reply_to = reply_to;
+			return this;
+		}
+		
         //Return the finally consrcuted Comment object
         public Comment build() {
             Comment comment =  new Comment(this);
