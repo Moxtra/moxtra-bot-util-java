@@ -901,11 +901,10 @@ String binder_info = chat.getBinderInfo();
 Comment object is used for setting up messages for sending via `Chat` and is generated through Comment.Builder(), which has the following structure:
 
 ```java
-  private String text;                    // TEXT
-  private String richtext;                // RICHTEXT
-  private HashMap<String, String> fields; // JSON FIELDS
-  private String action;                  // on-demand action for chat, page, or todo
-  private List<Button> buttons;           // BUTTONS 
+  private Message message;                // Structured Message
+  private ReplyTo reply_to;               // Reply To an object
+  private List<Template> fields_template; // fields mapping templates
+
   public Builder text(String text) {
   };
   public Builder richtext(String richtext) {
@@ -916,10 +915,26 @@ Comment object is used for setting up messages for sending via `Chat` and is gen
   };
   public Builder addButton(Button button) {
   };
+  public Builder fields_template(List<Template> fields_template) {
+  };  
   public Builder addTemplate(Template template) {
   };
+  public Builder reply_to(ReplyTo reply_to) {
+  };  
   public Comment build() {
   };  
+```
+
+#### `Message` Class
+
+`Message` object is part of Comment with the following structure:
+
+```java
+  private String text;                    // TEXT
+  private String richtext;                // RICHTEXT
+  private HashMap<String, String> fields; // JSON FIELDS
+  private String action;                  // on-demand action for chat, page, or todo
+  private List<Button> buttons;           // BUTTONS 
 ```  
 
 #### `Button` Class
@@ -938,6 +953,19 @@ Comment object is used for setting up messages for sending via `Chat` and is gen
   private String template_type;  // TEXT, RICHTEXT, or PAGE
   private String template;       // TEMPLATE
 ```
+
+#### `ReplyTo` Class
+
+`ReplyTo` indicates the source object that this comment is to reply to. 
+
+```java
+  private MsgBinderComment binder;       // Base binder comment
+  private MsgPage page;                  // Base page object or page position comment  
+  private MsgFile file;                  // Base file object  
+  private MsgTransaction transaction;    // Base transaction object
+  private MsgMeet meet;                  // Base meet object
+```
+
 ##### Example:
 
 ```java
