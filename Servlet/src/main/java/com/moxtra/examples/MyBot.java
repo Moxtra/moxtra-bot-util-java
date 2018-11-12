@@ -20,6 +20,7 @@ import com.moxtra.bot.model.ChatMessage;
 import com.moxtra.bot.model.Comment;
 import com.moxtra.bot.model.EventType;
 import com.moxtra.bot.model.Token;
+import com.moxtra.bot.model.ReplyTo;
 
 public class MyBot extends MoxtraBot {
 	private static final Logger logger = LoggerFactory.getLogger(MyBot.class);
