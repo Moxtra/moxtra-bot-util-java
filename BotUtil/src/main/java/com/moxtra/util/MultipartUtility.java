@@ -12,12 +12,26 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 /**
  * This utility class provides an abstraction layer for sending multipart HTTP
- * POST requests to a web server. 
+ * POST requests to a web server.
  *
  */
 public class MultipartUtility {
@@ -28,6 +42,14 @@ public class MultipartUtility {
 	private OutputStream outputStream;
 	private PrintWriter writer;
 
+
+	private static final HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
+		@Override
+		public boolean verify(String hostname, SSLSession session) {
+			return true;
+		}
+	};
+
 	/**
 	 * This constructor initializes a new HTTP POST request with content type
 	 * is set to multipart/form-data
@@ -36,13 +58,24 @@ public class MultipartUtility {
 	 * @throws IOException
 	 */
 	public MultipartUtility(String requestURL, String charset, String access_token)
-			throws IOException {
+			throws IOException, KeyManagementException, NoSuchAlgorithmException {
 		this.charset = charset;
-		
+
 		// creates a unique boundary based on time stamp
-		boundary = "---" + System.currentTimeMillis() + "---";
-		
+		boundary = "------" + System.currentTimeMillis() + "------";
+
+		SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(new KeyManager[0], new TrustManager[] {new DefaultTrustManager()}, new SecureRandom());
+        SSLContext.setDefault(ctx);
+
 		URL url = new URL(requestURL);
+		if (requestURL.contains("https://")) {
+			httpConn = (HttpsURLConnection) url.openConnection();
+			((HttpsURLConnection) httpConn).setHostnameVerifier(DO_NOT_VERIFY);
+		} else {
+			httpConn = (HttpURLConnection) url.openConnection();
+		}
+
 		httpConn = (HttpURLConnection) url.openConnection();
 		httpConn.setUseCaches(false);
 		httpConn.setDoOutput(true);	// indicates POST method
@@ -56,6 +89,20 @@ public class MultipartUtility {
 				true);
 	}
 
+	private static class DefaultTrustManager implements X509TrustManager {
+
+        @Override
+        public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+
+        @Override
+        public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return null;
+        }
+    }
+
 	/**
 	 * Adds a form field to the request
 	 * @param name field name
@@ -63,11 +110,11 @@ public class MultipartUtility {
 	 * @param contentType field contentType
 	 */
 	public void addFormField(String name, String value, String contentType) {
-		
+
 		if (contentType == null) {
 			contentType = "text/plain";
 		}
-		
+
 		writer.append("--" + boundary).append(LINE_FEED);
 		writer.append("Content-Disposition: form-data; name=\"" + name + "\"")
 				.append(LINE_FEED);
@@ -79,9 +126,9 @@ public class MultipartUtility {
 	}
 
 	/**
-	 * Adds a upload file section to the request 
+	 * Adds a upload file section to the request
 	 * @param fieldName name attribute in <input type="file" name="..." />
-	 * @param uploadFile a File to be uploaded 
+	 * @param uploadFile a File to be uploaded
 	 * @throws IOException
 	 */
 	public void addFilePart(String fieldName, File uploadFile)
@@ -92,10 +139,14 @@ public class MultipartUtility {
 				"Content-Disposition: form-data; name=\"" + fieldName
 						+ "\"; filename=\"" + fileName + "\"")
 				.append(LINE_FEED);
+
+        String contentType = Files.probeContentType(uploadFile.toPath());
+        if (contentType == null) contentType = "application/octet-stream";
+
 		writer.append(
-				"Content-Type: "
-						+ URLConnection.guessContentTypeFromName(fileName))
+				"Content-Type: " + contentType)
 				.append(LINE_FEED);
+
 		writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
 		writer.append(LINE_FEED);
 		writer.flush();
@@ -108,9 +159,8 @@ public class MultipartUtility {
 		}
 		outputStream.flush();
 		inputStream.close();
-		
-		writer.append(LINE_FEED);
-		writer.flush();		
+
+		writer.flush();
 	}
 
 	/**
@@ -122,7 +172,7 @@ public class MultipartUtility {
 		writer.append(name + ": " + value).append(LINE_FEED);
 		writer.flush();
 	}
-	
+
 	/**
 	 * Completes the request and receives response from the server.
 	 * @return a list of Strings as response in case the server returned
