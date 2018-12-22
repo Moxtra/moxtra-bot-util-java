@@ -4,12 +4,12 @@
 	<parent>
 	    <groupId>com.moxtra.bot</groupId>
 	    <artifactId>javabot</artifactId>
-	    <version>3.0.1</version>
+	    <version>3.0.2</version>
 	</parent>  
   
   <groupId>com.moxtra.bot</groupId>
   <artifactId>botapp</artifactId>
-  <version>3.0.1</version>
+  <version>3.0.2</version>
   <packaging>war</packaging>
   <name>MoxtraBotApp</name>
   <build>
@@ -41,7 +41,7 @@
 		<dependency>
 			<groupId>com.moxtra.bot</groupId>
 			<artifactId>botutil</artifactId>
-			<version>3.0.1</version>
+			<version>3.0.2</version>
 		</dependency>  
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>

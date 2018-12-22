@@ -57,6 +57,7 @@ public class MoxtraBotUtil {
 	private static final int MAX_CONNECTION_PER_ROUTE = 20;
 	private static final int MAX_CONNECTION_MOXTRA = 50;
 	private static PoolingHttpClientConnectionManager ccm = null;
+	private static CloseableHttpClient httpClient = null;
 	private static String baseUrl = null;
 
 
@@ -71,6 +72,9 @@ public class MoxtraBotUtil {
 
 		  try {
 
+			  if (httpClient != null)
+				  return httpClient;
+			  
 			  if (baseUrl == null) {
 				  baseUrl = MOXTRA_API_ENDPOINT;
 			  }
@@ -99,8 +103,11 @@ public class MoxtraBotUtil {
 			  }
 
 			  builder.setConnectionManager(ccm);
+			  builder.setConnectionManagerShared(true);
 
-			  return builder.build();
+			  httpClient = builder.build();
+			  
+			  return httpClient;
 
 		  } catch (Exception e) {
 			  return HttpClients.createDefault();
@@ -129,6 +136,13 @@ public class MoxtraBotUtil {
 
 	public static void setBaseUrl(String baseUrl) {
 		MoxtraBotUtil.baseUrl = baseUrl;
+	}
+	
+	/**
+	 * reset httpClient
+	 */
+	public static void resetHttpClient() {
+		MoxtraBotUtil.httpClient = null;
 	}
 
 	/**
