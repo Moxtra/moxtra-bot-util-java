@@ -8,16 +8,25 @@ public class ChatMessage implements Serializable {
 	private String binder_id;
 	private String org_id;
 	private String client_id;
+	private String callback_url;
 	private Event event;
 
-	
+
 	public ChatMessage() {
 	}
-	
+
 	public ChatMessage(String id) {
 		message_id = id;
 	}
-	
+
+	public String getCallback_url() {
+		return callback_url;
+	}
+
+	public void setCallback_url(String callback_url) {
+		this.callback_url = callback_url;
+	}
+
 	public String getBinder_id() {
 		return binder_id;
 	}
